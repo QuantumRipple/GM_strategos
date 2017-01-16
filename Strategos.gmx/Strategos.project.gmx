@@ -11,6 +11,8 @@
     <sprite>sprites\spr_button_nospot</sprite>
     <sprite>sprites\spr_button_spot</sprite>
     <sprite>sprites\spr_spotting_selection</sprite>
+    <sprite>sprites\spr_button_host</sprite>
+    <sprite>sprites\spr_button_join</sprite>
   </sprites>
   <backgrounds name="background">
     <background>background\bgr_board</background>
@@ -27,6 +29,12 @@
     <script>scripts\scr_submit_move.gml</script>
     <script>scripts\scr_show_move.gml</script>
     <script>scripts\scr_battle_eval.gml</script>
+    <script>scripts\scr_server_send_refresh.gml</script>
+    <script>scripts\scr_server_send_partner_connected.gml</script>
+    <script>scripts\scr_server_send_init.gml</script>
+    <script>scripts\scr_server_send_partner_setup.gml</script>
+    <script>scripts\scr_server_send_game_start.gml</script>
+    <script>scripts\scr_server_send_move_made.gml</script>
   </scripts>
   <fonts name="fonts">
     <font>fonts\fnt_tiles</font>
@@ -41,6 +49,9 @@
     <object>objects\obj_button_nospot</object>
     <object>objects\obj_button_spot</object>
     <object>objects\obj_spotting_selection</object>
+    <object>objects\obj_button_join</object>
+    <object>objects\obj_button_host</object>
+    <object>objects\obj_control</object>
   </objects>
   <rooms name="rooms">
     <room>rooms\rm_menu</room>

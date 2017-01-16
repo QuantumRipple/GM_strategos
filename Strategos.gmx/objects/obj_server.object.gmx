@@ -27,13 +27,56 @@
             <kind>1</kind>
             <string>host = network_create_server(network_socket_tcp, global.port, 2);
 write_buffer = buffer_create(params.buffer_size, buffer_fixed, 1);
-client_sockets = ds_list_create();
+
+client_count = 0;
+client[1] = noone;
+client[0] = noone;
+
+state = 0; //0 = waiting for ready, 1 = in play
+turn = 0;
+
+ready[1] = false;
+ready[0] = false;
+
+captured_a = scr_type_count_array();
+captured_b = scr_type_count_array();
+
+for (var i = 9; i &gt;= 0; --i) {
+    for (var j = 7; j &gt;= 0; --j) {
+        board[i,j] = instance_create(0,0,obj_server_tile);
+        instance_deactivate_object(board[i,j]);
+    }
+}
 
 if (global.self_host = true) {
     global.ip = "127.0.0.1";
     global.player = 0;
     instance_create(0,0,obj_client);
 }
+</string>
+          </argument>
+        </arguments>
+      </action>
+    </event>
+    <event eventtype="1" enumb="0">
+      <action>
+        <libid>1</libid>
+        <id>603</id>
+        <kind>7</kind>
+        <userelative>0</userelative>
+        <isquestion>0</isquestion>
+        <useapplyto>-1</useapplyto>
+        <exetype>2</exetype>
+        <functionname></functionname>
+        <codestring></codestring>
+        <whoName>self</whoName>
+        <relative>0</relative>
+        <isnot>0</isnot>
+        <arguments>
+          <argument>
+            <kind>1</kind>
+            <string>network_destroy(host);
+buffer_delete(write_buffer);
 </string>
           </argument>
         </arguments>
@@ -60,48 +103,47 @@ if (global.self_host = true) {
 switch(v_event_type){
     case network_type_connect:
         var socket = ds_map_find_value(async_load, "socket");
-        ds_list_add(client_sockets, socket);
-    break;
-    case network_type_disconnect:
-        var socket = ds_map_find_value(async_load, "socket");
-        var find_socket = ds_list_find_index(client_sockets, socket);
-        if (find_socket &gt;= 0) {
-            ds_list_delete(client_sockets, find_socket);
+        if (client[0] == noone) {
+            ++client_count;
+            client[0] = socket;
+            if (client[1] != noone) { //notify B that A connected
+                scr_server_send_partner_connected(1);
+            }
+            if (ready[0]) { //could be server state 0 (still waiting on partner) or state 1 (in play)
+                scr_server_send_refresh(0);
+            } else {
+                scr_server_send_init(0);
+            }
+        } else if (client[1] == noone) {
+            ++client_count;
+            client[1] = socket;
+            if (client[0] != noone) { //notify A that B connected
+                scr_server_send_partner_connected(0);
+            }
+            if (ready[1]) { //could be server state 0 (still waiting on partner) or state 1 (in play)
+                scr_server_send_refresh(1);
+            } else {
+                scr_server_send_init(1);
+            }
         }
-    break;
+        break;
+    case network_type_disconnect: //TODO: send disconnect messages
+        var socket = ds_map_find_value(async_load, "socket");
+        if (socket == client_a) {
+            client_a = noone;
+            --client_count;
+        } else if (socket == client_b) {
+            client_b = noone;
+            --client_count;
+        }
+        break;
     case network_type_data:
         var read_buffer = ds_map_find_value(async_load, "buffer");
         var socket = ds_map_find_value(async_load, "id");
         buffer_seek(read_buffer, buffer_seek_start, 0);
-        scr_server_incoming_packets(read_buffer, socket);
-
-    break;
+        scr_server_incoming_packets(read_buffer, socket, socket == client_b);
+        break;
 }
-</string>
-          </argument>
-        </arguments>
-      </action>
-    </event>
-    <event eventtype="7" enumb="3">
-      <action>
-        <libid>1</libid>
-        <id>603</id>
-        <kind>7</kind>
-        <userelative>0</userelative>
-        <isquestion>0</isquestion>
-        <useapplyto>-1</useapplyto>
-        <exetype>2</exetype>
-        <functionname></functionname>
-        <codestring></codestring>
-        <whoName>self</whoName>
-        <relative>0</relative>
-        <isnot>0</isnot>
-        <arguments>
-          <argument>
-            <kind>1</kind>
-            <string>network_destroy(host);
-buffer_delete(write_buffer);
-ds_list_destroy(client_sockets);
 </string>
           </argument>
         </arguments>

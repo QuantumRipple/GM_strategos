@@ -23,7 +23,8 @@ switch (msgId) {
         }
         break;
     case message_type.partner_connected: //no data, just indicates another player has connected
-        global.state = 2;
+        if (global.state < 2) global.state = 2;
+        //TODO: if we get this mid-game, its just informational 
         break;
     case message_type.game_start: //data says if it's our turn
         global.state = 4;

@@ -17,6 +17,7 @@ enum message_type {
     message,
     partner_setup,
     partner_connected,
+    partner_disconnected,
     move_made,
     init,
     game_over,
@@ -37,7 +38,8 @@ enum tile_type {
     colonel_8 = 10,
     general_9 = 11,
     marshal_10 = 12,
-    bomb = 13
+    bomb = 13,
+    block = 14,
 }
 
 enum params {

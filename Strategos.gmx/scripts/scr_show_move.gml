@@ -1,10 +1,19 @@
 ///scr_show_move(x_start, y_start, x_end, y_end, attacker_type if revealed , defender_type if revealed, spot_type)
-if (argument[5] != 0) {
-    with (board[argument[2],argument[3]]) { //defender
+if (argument[5] != 0) { //enemy is revealed
+    if argument[6] != 0 { //spot, so x_end/y_end doesn't indicate revealed piece
+        if (board[argument[0], argument[1]].owner) {//we own, so the next spot up
+            var inst = board[argument[2],argument[3]-1];
+        } else {
+            var inst = board[argument[2],argument[3]+1]
+        }
+    } else{
+        var inst = board[argument[2],argument[3]];
+    }
+    with (inst) { //defender
         type = argument[5];
         revealed = true;
         just_revealed = true;    
-    };
+    }
 }
 
 with(board[argument[0], argument[1]]) { //mover/attacker
