@@ -19,6 +19,8 @@ switch (msgId) {
                 inst.grid_x = i;
                 inst.grid_y = j;
                 board[i,j] = inst;
+                inst.x = params.board_offset_x + i*params.board_grid_size; 
+                inst.y = params.board_offset_y + j*params.board_grid_size;
             }
         }
         break;
@@ -31,15 +33,25 @@ switch (msgId) {
         global.turn = buffer_read(buf, buffer_u8);
         break;
     case message_type.move_made: //xstart, ystart, xend, yend, attacker type if revealed (otherwise 0), defender type if revealed (otherwise 0), spot type (0 if no spot), turn
-        scr_show_move(buffer_read(buf, buffer_u8), buffer_read(buf, buffer_u8), buffer_read(buf, buffer_u8), buffer_read(buf, buffer_u8), buffer_read(buf, buffer_u8), buffer_read(buf, buffer_u8), buffer_read(buf, buffer_u8));
+        var a0 = buffer_read(buf, buffer_u8);
+        var a1 = buffer_read(buf, buffer_u8);
+        var a2 = buffer_read(buf, buffer_u8);
+        var a3 = buffer_read(buf, buffer_u8);
+        var a4 = buffer_read(buf, buffer_u8);
+        var a5 = buffer_read(buf, buffer_u8);
+        var a6 = buffer_read(buf, buffer_u8);
+        scr_show_move(a0, a1, a2, a3, a4, a5, a6);
         if (spot_waiting != 0) turn_waiting = buffer_read(buf, buffer_u8); //it should always hit this case, at least for a single step
         else global.turn = buffer_read(buf, buffer_u8);
+        break;
     case message_type.game_over:
         var winner = buffer_read(buf, buffer_u8);
         var reason = buffer_read(buf, buffer_u8); //0 = flag taken, 1 = no movable pieces, 2 = forfiet
         var type = buffer_read(buf, buffer_u8);
+        var tempx = buffer_read(buf, buffer_u8);
+        var tempy = buffer_read(buf, buffer_u8);
         while (type != 0) { //null terminated list of enemy pieces in (type, x, y) format
-            board[buffer_read(buf, buffer_u8), buffer_read(buf, buffer_u8)].type = type;
+            board[tempx, tempy].type = type;
             type = buffer_read(buf, buffer_u8);
         }
         break;

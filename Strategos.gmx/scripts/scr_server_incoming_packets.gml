@@ -66,6 +66,15 @@ switch (msgId) {
         var desty = buffer_read(buf, buffer_u8);
         var spot = buffer_read(buf, buffer_u8);
         
+        if (player==1) {//board reversed
+            tempx = 9-tempx;
+            destx = 9-destx;
+            tempy = 7-tempy;
+            desty = 7-desty;
+        }
+        
+        show_debug_message("got submit_move packet: "+string(tempx)+", "+string(tempy)+", "+string(destx)+", "+string(desty)+", "+string(spot));
+        
         //TODO: bounds checking
         
         var type = board[tempx,tempy].type;

@@ -102,66 +102,113 @@ grab_offset_y = 0;
             if (parent.move_animation_waiting == 1) {
                 var xdef = round((x-params.board_offset_x)/params.board_grid_size);
                 var ydef = round((y-params.board_offset_y)/params.board_grid_size);
-                if (spot_waiting != 0) {
-                    var defender = parent.board[xdef, ydef-1];
+                if (parent.spot_waiting != 0) { //a spot will happen
+                    if (owner== 0) var defender = parent.board[xdef, ydef-1]; //this player
+                    else var defender = parent.board[xdef, ydef+1]; //opponent
                     if (xdef != grid_x) || (ydef != grid_y) { //we moved the spotter as well
                         parent.board[grid_x, grid_y] = noone;
                         parent.board[xdef, ydef] = self; //no need to check because we can't spot if we weren't moving into a null spot
                     }
-                    if (spot_waiting == defender.type) { //killed via spotting
+                    if (parent.spot_waiting == defender.type) { //killed via spotting
                         parent.board[xdef, ydef+1] = noone;
                         defender.state = 3;
-                        parent.enemy_tiles[defender.type] -= 1;
-                        defender.xstart = room_width - scr_type_pos_x(defender.type,parent.enemy_tiles[defender.type]);
-                        defender.ystart = room_height - scr_type_pos_y(defender.type,parent.enemy_tiles[defender.type]);
+                        
+                        if (defender.owner==0) { //we were defending, send it to the other side's board
+                            parent.friendly_tiles[defender.type] -= 1;
+                            defender.xstart = room_width - scr_type_pos_x(defender.type,parent.friendly_tiles[defender.type]);
+                            defender.ystart = room_height - scr_type_pos_y(defender.type,parent.friendly_tiles[defender.type]);
+                        } else { //enemy defender
+                            parent.enemy_tiles[defender.type] -= 1;
+                            defender.xstart = scr_type_pos_x(defender.type,parent.enemy_tiles[defender.type]);
+                            defender.ystart = scr_type_pos_y(defender.type,parent.enemy_tiles[defender.type]);
+                        }
+                        
                         with (defender) { //move to start position
                             scr_slide(xstart, ystart);
                         }
                         parent.move_animation_waiting = 3;
                     }
                     
-                } else {
+                } else { //move or combat
                     var defender = parent.board[xdef, ydef];
                     parent.board[grid_x, grid_y] = noone; //free our old spot
-                    //parent.board[xdef, ydef] = noone; //free defending spot in case of tie
-                    switch(scr_battle_eval(type, defender.type)) {
-                        case 0: //attacker won
-                            parent.board[xdef, ydef] = self;
-                            grid_x = xdef;
-                            grid_y = ydef;
-                            defender.state = 3;
-                            parent.enemy_tiles[defender.type] -= 1;
-                            defender.xstart = room_width - scr_type_pos_x(defender.type,parent.enemy_tiles[defender.type]);
-                            defender.ystart = room_height - scr_type_pos_y(defender.type,parent.enemy_tiles[defender.type]);
-                            with (defender) { //move to start position
+                    if (defender != noone) { //combat
+                        switch(scr_battle_eval(type, defender.type)) {
+                            case 0: //attacker won
+                                parent.board[xdef, ydef] = self;
+                                grid_x = xdef;
+                                grid_y = ydef;
+                                defender.state = 3;
+                                if (defender.owner==0) { //we were defending, send it to the other side's board
+                                    parent.friendly_tiles[defender.type] -= 1;
+                                    defender.xstart = room_width - scr_type_pos_x(defender.type,parent.friendly_tiles[defender.type]);
+                                    defender.ystart = room_height - scr_type_pos_y(defender.type,parent.friendly_tiles[defender.type]);
+                                } else { //enemy defender
+                                    parent.enemy_tiles[defender.type] -= 1;
+                                    defender.xstart = scr_type_pos_x(defender.type,parent.enemy_tiles[defender.type]);
+                                    defender.ystart = scr_type_pos_y(defender.type,parent.enemy_tiles[defender.type]);
+                                }
+                                with (defender) { //move to start position
+                                    scr_slide(xstart, ystart);
+                                }
+                                parent.move_animation_waiting = 3;
+                                break;
+                            case 1: //defender won
+                                state = 3;
+                                
+                                if (owner==0) { //we were attacking, send it to the other side's board
+                                    parent.friendly_tiles[type] -= 1;
+                                    xstart = room_width - scr_type_pos_x(type,parent.friendly_tiles[type]);
+                                    ystart = room_height - scr_type_pos_y(type,parent.friendly_tiles[type]);
+                                } else { //enemy attacker
+                                    parent.enemy_tiles[type] -= 1;
+                                    xstart = scr_type_pos_x(type,parent.enemy_tiles[type]);
+                                    ystart = scr_type_pos_y(type,parent.enemy_tiles[type]);
+                                }
+                                
                                 scr_slide(xstart, ystart);
-                            }
-                            parent.move_animation_waiting = 3;
-                            break;
-                        case 1: //defender won
-                            state = 3;
-                            scr_slide(xstart, ystart);
-                            parent.move_animation_waiting = 3;
-                            break;
-                        case 2: //tie
-                            parent.board[xdef, ydef] = noone;
-                            parent.enemy_tiles[defender.type] -= 1;
-                            defender.xstart = room_width - scr_type_pos_x(defender.type,parent.enemy_tiles[defender.type]);
-                            defender.ystart = room_height - scr_type_pos_y(defender.type,parent.enemy_tiles[defender.type]);
-                            with (defender) { //move to start position
+                                parent.move_animation_waiting = 3;
+                                break;
+                            case 2: //tie
+                                parent.board[xdef, ydef] = noone;
+                                if (defender.owner==0) { //we were defending, send it to the other side's board
+                                    parent.friendly_tiles[defender.type] -= 1;
+                                    defender.xstart = room_width - scr_type_pos_x(defender.type,parent.friendly_tiles[defender.type]);
+                                    defender.ystart = room_height - scr_type_pos_y(defender.type,parent.friendly_tiles[defender.type]);
+                                } else { //enemy defender
+                                    parent.enemy_tiles[defender.type] -= 1;
+                                    defender.xstart = scr_type_pos_x(defender.type,parent.enemy_tiles[defender.type]);
+                                    defender.ystart = scr_type_pos_y(defender.type,parent.enemy_tiles[defender.type]);
+                                }
+                                with (defender) { //move to start position
+                                    scr_slide(xstart, ystart);
+                                }
+                                
+                                if (owner==0) { //we were attacking, send it to the other side's board
+                                    parent.friendly_tiles[type] -= 1;
+                                    xstart = room_width - scr_type_pos_x(type,parent.friendly_tiles[type]);
+                                    ystart = room_height - scr_type_pos_y(type,parent.friendly_tiles[type]);
+                                } else { //enemy attacker
+                                    parent.enemy_tiles[type] -= 1;
+                                    xstart = scr_type_pos_x(type,parent.enemy_tiles[type]);
+                                    ystart = scr_type_pos_y(type,parent.enemy_tiles[type]);
+                                }
+                                state = 3;
                                 scr_slide(xstart, ystart);
-                            }
-                            state = 3;
-                            scr_slide(xstart, ystart);
-                            parent.move_animation_waiting = 4;
-                            break;
+                                parent.move_animation_waiting = 4;
+                                break;
+                        }
+                    } else { //plain movement
+                        parent.board[xdef, ydef] = self;
+                        grid_x = xdef;
+                        grid_y = ydef;
                     }
                 }
             } else if (parent.move_animation_waiting == 4) {
                 parent.move_animation_waiting = 3;
             } else if (parent.move_animation_waiting == 3) {
                 parent.move_animation_waiting = 0;
-                if (turn_waiting) global.turn = true; //animation is done, if our turn
+                if (parent.turn_waiting) global.turn = true; //animation is done, if our turn
             }
         }
     }

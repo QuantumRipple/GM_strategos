@@ -19,7 +19,12 @@ buffer_write(write_buffer, buffer_u8, argument[0]==turn || ready[argument[0]]==f
 for (var i = 0; i < 10; ++i) {
     for (var j = 0; j < 8; ++j) {
         if (board[i,j].owner < 2) {
-            buffer_write(write_buffer, buffer_u8, board[i,j].owner == argument[0]); //ownwer is target?
+            if (board[i,j].owner == argument[0]) {
+                buffer_write(write_buffer, buffer_u8, 0); //ownwer is target
+            } else {
+                buffer_write(write_buffer, buffer_u8, 1); //ownwer is not target
+            }
+            
             buffer_write(write_buffer, buffer_u8, 2); //if it is on the board, tile state is 2 (in play)
             if (board[i,j].owner == argument[0] || board[i,j].revealed) { //target owns this piece or has seen it's value
                 buffer_write(write_buffer, buffer_u8, board[i,j].type);
@@ -28,15 +33,24 @@ for (var i = 0; i < 10; ++i) {
             }
             buffer_write(write_buffer, buffer_u8, board[i,j].revealed);
             buffer_write(write_buffer, buffer_u8, board[i,j].moved);
-            buffer_write(write_buffer, buffer_u8, i);
-            buffer_write(write_buffer, buffer_u8, j);
+            if (argument[0] == 1) { //reverse for the b player
+                buffer_write(write_buffer, buffer_u8, 9-i);
+                buffer_write(write_buffer, buffer_u8, 7-j);
+            } else {
+                buffer_write(write_buffer, buffer_u8, i);
+                buffer_write(write_buffer, buffer_u8, j);
+            }
         }
     }
 }
 if (argument[0]==0 || ready[0]==true){ //to avoid sending opponents unplaced pieces
     for (var i = tile_type.flag; i <= tile_type.bomb; ++i) { //target's captured pieces
         for (var j = 0; j < captured_a[i]; ++j) { //doesn't activate at all for uncaptured pieces
-            buffer_write(write_buffer, buffer_u8, argument[0]==0); //ownwer is target?
+            if (argument[0]==0) {
+                buffer_write(write_buffer, buffer_u8, 0); //ownwer is target
+            } else {
+                buffer_write(write_buffer, buffer_u8, 1); //ownwer is not target
+            }
             if (ready[0]==false) {
                 buffer_write(write_buffer, buffer_u8, 0); //not intended use case (may be bugs), but target hasn't submitted yet, these are unset pieces
             } else {
@@ -45,7 +59,7 @@ if (argument[0]==0 || ready[0]==true){ //to avoid sending opponents unplaced pie
             buffer_write(write_buffer, buffer_u8, i); //piece type is always known for off-board pieces
             buffer_write(write_buffer, buffer_u8, true); //revealed, all dead pieces are revealed
             buffer_write(write_buffer, buffer_u8, false); //moved data isn't preserved past death
-            buffer_write(write_buffer, buffer_u8, 0); //gridx/gridy don't matter
+            buffer_write(write_buffer, buffer_u8, 0); //gridx/y doesn't matter
             buffer_write(write_buffer, buffer_u8, 0);
         }
     }
@@ -53,7 +67,11 @@ if (argument[0]==0 || ready[0]==true){ //to avoid sending opponents unplaced pie
 if (argument[0]==1 || ready[1]==true){ //to avoid sending opponents unplaced pieces
     for (var i = tile_type.flag; i <= tile_type.bomb; ++i) { //target's captured pieces
         for (var j = 0; j < captured_b[i]; ++j) { //doesn't activate at all for uncaptured pieces
-            buffer_write(write_buffer, buffer_u8, argument[0]==1); //ownwer is target?
+            if (argument[0]==1) {
+                buffer_write(write_buffer, buffer_u8, 0); //ownwer is target
+            } else {
+                buffer_write(write_buffer, buffer_u8, 1); //ownwer is not target
+            }
             if (ready[1]==false) {
                 buffer_write(write_buffer, buffer_u8, 0); //not intended use case (may be bugs), but target hasn't submitted yet, these are unset pieces
             } else {

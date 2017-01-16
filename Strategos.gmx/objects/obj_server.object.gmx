@@ -141,7 +141,7 @@ switch(v_event_type){
         var read_buffer = ds_map_find_value(async_load, "buffer");
         var socket = ds_map_find_value(async_load, "id");
         buffer_seek(read_buffer, buffer_seek_start, 0);
-        scr_server_incoming_packets(read_buffer, socket, socket == client_b);
+        scr_server_incoming_packets(read_buffer, socket, socket == client[1]);
         break;
 }
 </string>

@@ -35,6 +35,7 @@ latency = 0;
 //gui setup
 
 enemy_tiles = scr_type_count_array();
+friendly_tiles = scr_type_count_array();
 move_animation_waiting = 0; //0 = not waiting, 1 = waiting for initial move, 2 = waiting for combat animation, 3 = waiting for death animation, 4 = waiting for two death animations
 spot_waiting = 0;
 turn_waiting = 0;
@@ -179,6 +180,7 @@ buffer_delete(write_buffer);
             }
         } 
     } else if (active) { //player may be making a move
+        active = false;
         var temp_grid_x = round((x-params.board_offset_x)/params.board_grid_size);
         var temp_grid_y = round((y-params.board_offset_y)/params.board_grid_size);
         
@@ -198,6 +200,8 @@ buffer_delete(write_buffer);
             other.sel_x = grid_x;
             other.sel_y = grid_y;
             instance_create(params.spot_x, params.spot_y, obj_button_spot);
+        } else {
+            scr_slide(params.board_offset_x + grid_x*params.board_grid_size, params.board_offset_y + grid_y*params.board_grid_size); //return to previous location
         }
     }
 }
