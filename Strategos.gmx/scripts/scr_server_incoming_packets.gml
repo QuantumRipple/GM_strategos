@@ -75,7 +75,7 @@ switch (msgId) {
         
         show_debug_message("got submit_move packet: "+string(tempx)+", "+string(tempy)+", "+string(destx)+", "+string(desty)+", "+string(spot));
         
-        //TODO: bounds checking
+        //TODO: bounds checking (don't forget to reduce if spot!=0)
         
         var type = board[tempx,tempy].type;
         var def = board[destx,desty].type;
@@ -96,13 +96,12 @@ switch (msgId) {
         turn = opponent;
         if (def == tile_type.blank || (tempx==destx && tempy==desty)) { //not a regular combat
             board[tempx,tempy].moved = tempx!=destx || tempy!=desty;
-        
-            if (player==0) var spdef = board[destx, desty-1]; else var spdef = board[destx, desty+1];
-            def = spdef.type;
             var temp_loc = board[destx,desty]; //swap works okay even when spotter isn't moving
             board[destx,desty] = board[tempx,tempy];
             board[tempx,tempy] = temp_loc; //swap with the empty space is easier than moving all the values
             if (spot != 0) { //spotter (with optional move)
+                if (player==0) var spdef = board[destx, desty-1]; else var spdef = board[destx, desty+1];
+                def = spdef.type;
                 board[destx,desty].revealed = true; //post swap
                 if (spot == def) { //correct spotting, kill the spotted piece
                     if player==0 {
@@ -135,7 +134,8 @@ switch (msgId) {
                         captured_a[def] += 1;
                     }
                     //move attacker into defender spot
-                    board[destx,desty] = board[tempx,tempy];
+                    board[destx,desty].owner = player;
+                    board[destx,desty].type = type;
                     board[destx,desty].revealed = true;
                     board[destx,desty].moved = true;
                     //clear attacker's old spot
@@ -174,6 +174,10 @@ switch (msgId) {
                     break;
             }
            scr_server_send_move_made(player,tempx,tempy,destx,desty,type,def,0);
+        }
+        var defeat = scr_server_check_defeat(player);
+        if (defeat != 0) {
+            scr_server_send_game_over(defeat);
         }
         break;
     case message_type.request_refresh:

@@ -36,8 +36,7 @@ latency = 0;
 
 enemy_tiles = scr_type_count_array();
 friendly_tiles = scr_type_count_array();
-move_animation_waiting = 0; //0 = not waiting, 1 = waiting for initial move, 2 = waiting for combat animation, 3 = waiting for death animation, 4 = waiting for two death animations
-spot_waiting = 0;
+move_animation_waiting = 0;
 turn_waiting = 0;
 placed = 0;
 sel_x = 0;
@@ -49,36 +48,36 @@ for (var i = 9; i &gt;= 0; --i) {
     }
 }
 //create our side's pieces
-var inst = instance_create(scr_type_pos_x(tile_type.flag    , 0), scr_type_pos_y(tile_type.flag        , 0), obj_base_tile); inst.type = tile_type.flag; //flag
-inst = instance_create(scr_type_pos_x(tile_type.spy         , 0), scr_type_pos_y(tile_type.spy         , 0), obj_base_tile); inst.type = tile_type.spy; //spy
-inst = instance_create(scr_type_pos_x(tile_type.spotter_1   , 0), scr_type_pos_y(tile_type.spotter_1   , 0), obj_base_tile); inst.type = tile_type.spotter_1; //spotter 1
-inst = instance_create(scr_type_pos_x(tile_type.spotter_1   , 1), scr_type_pos_y(tile_type.spotter_1   , 1), obj_base_tile); inst.type = tile_type.spotter_1; //spotter 2
-inst = instance_create(scr_type_pos_x(tile_type.scout_2     , 0), scr_type_pos_y(tile_type.scout_2     , 0), obj_base_tile); inst.type = tile_type.scout_2; //scout 1
-inst = instance_create(scr_type_pos_x(tile_type.scout_2     , 1), scr_type_pos_y(tile_type.scout_2     , 1), obj_base_tile); inst.type = tile_type.scout_2; //scout 2
-inst = instance_create(scr_type_pos_x(tile_type.scout_2     , 2), scr_type_pos_y(tile_type.scout_2     , 2), obj_base_tile); inst.type = tile_type.scout_2; //scout 3
-inst = instance_create(scr_type_pos_x(tile_type.scout_2     , 3), scr_type_pos_y(tile_type.scout_2     , 3), obj_base_tile); inst.type = tile_type.scout_2; //scout 4
-inst = instance_create(scr_type_pos_x(tile_type.scout_2     , 4), scr_type_pos_y(tile_type.scout_2     , 4), obj_base_tile); inst.type = tile_type.scout_2; //scout 5
-inst = instance_create(scr_type_pos_x(tile_type.miner_3     , 0), scr_type_pos_y(tile_type.miner_3     , 0), obj_base_tile); inst.type = tile_type.miner_3; //miner 1
-inst = instance_create(scr_type_pos_x(tile_type.miner_3     , 1), scr_type_pos_y(tile_type.miner_3     , 1), obj_base_tile); inst.type = tile_type.miner_3; //miner 2
-inst = instance_create(scr_type_pos_x(tile_type.miner_3     , 2), scr_type_pos_y(tile_type.miner_3     , 2), obj_base_tile); inst.type = tile_type.miner_3; //miner 3
-inst = instance_create(scr_type_pos_x(tile_type.miner_3     , 3), scr_type_pos_y(tile_type.miner_3     , 3), obj_base_tile); inst.type = tile_type.miner_3; //miner 4
-inst = instance_create(scr_type_pos_x(tile_type.miner_3     , 4), scr_type_pos_y(tile_type.miner_3     , 4), obj_base_tile); inst.type = tile_type.miner_3; //miner 5
-inst = instance_create(scr_type_pos_x(tile_type.sergeant_4  , 0), scr_type_pos_y(tile_type.sergeant_4  , 0), obj_base_tile); inst.type = tile_type.sergeant_4; //4 1
-inst = instance_create(scr_type_pos_x(tile_type.sergeant_4  , 1), scr_type_pos_y(tile_type.sergeant_4  , 1), obj_base_tile); inst.type = tile_type.sergeant_4; //4 2
-inst = instance_create(scr_type_pos_x(tile_type.lieutenant_5, 0), scr_type_pos_y(tile_type.lieutenant_5, 0), obj_base_tile); inst.type = tile_type.lieutenant_5; //5 1
-inst = instance_create(scr_type_pos_x(tile_type.lieutenant_5, 1), scr_type_pos_y(tile_type.lieutenant_5, 1), obj_base_tile); inst.type = tile_type.lieutenant_5; //5 2
-inst = instance_create(scr_type_pos_x(tile_type.captain_6   , 0), scr_type_pos_y(tile_type.captain_6   , 0), obj_base_tile); inst.type = tile_type.captain_6; //6 1
-inst = instance_create(scr_type_pos_x(tile_type.captain_6   , 1), scr_type_pos_y(tile_type.captain_6   , 1), obj_base_tile); inst.type = tile_type.captain_6; //6 2
-inst = instance_create(scr_type_pos_x(tile_type.major_7     , 0), scr_type_pos_y(tile_type.major_7     , 0), obj_base_tile); inst.type = tile_type.major_7; //7
-inst = instance_create(scr_type_pos_x(tile_type.colonel_8   , 0), scr_type_pos_y(tile_type.colonel_8   , 0), obj_base_tile); inst.type = tile_type.colonel_8; //8
-inst = instance_create(scr_type_pos_x(tile_type.general_9   , 0), scr_type_pos_y(tile_type.general_9   , 0), obj_base_tile); inst.type = tile_type.general_9; //9
-inst = instance_create(scr_type_pos_x(tile_type.marshal_10  , 0), scr_type_pos_y(tile_type.marshal_10  , 0), obj_base_tile); inst.type = tile_type.marshal_10; //10
-inst = instance_create(scr_type_pos_x(tile_type.bomb        , 0), scr_type_pos_y(tile_type.bomb        , 0), obj_base_tile); inst.type = tile_type.bomb; //bomb 1
-inst = instance_create(scr_type_pos_x(tile_type.bomb        , 1), scr_type_pos_y(tile_type.bomb        , 1), obj_base_tile); inst.type = tile_type.bomb; //bomb 2
-inst = instance_create(scr_type_pos_x(tile_type.bomb        , 2), scr_type_pos_y(tile_type.bomb        , 2), obj_base_tile); inst.type = tile_type.bomb; //bomb 3
-inst = instance_create(scr_type_pos_x(tile_type.bomb        , 3), scr_type_pos_y(tile_type.bomb        , 3), obj_base_tile); inst.type = tile_type.bomb; //bomb 4
-inst = instance_create(scr_type_pos_x(tile_type.bomb        , 4), scr_type_pos_y(tile_type.bomb        , 4), obj_base_tile); inst.type = tile_type.bomb; //bomb 5
-inst = instance_create(scr_type_pos_x(tile_type.bomb        , 5), scr_type_pos_y(tile_type.bomb        , 5), obj_base_tile); inst.type = tile_type.bomb; //bomb 6
+var inst = instance_create(scr_type_pos_x(tile_type.flag    , 0), scr_type_pos_y(tile_type.flag        , 0,0), obj_base_tile); inst.type = tile_type.flag; //flag
+inst = instance_create(scr_type_pos_x(tile_type.spy         , 0), scr_type_pos_y(tile_type.spy         , 0,0), obj_base_tile); inst.type = tile_type.spy; //spy
+inst = instance_create(scr_type_pos_x(tile_type.spotter_1   , 0), scr_type_pos_y(tile_type.spotter_1   , 0,0), obj_base_tile); inst.type = tile_type.spotter_1; //spotter 1
+inst = instance_create(scr_type_pos_x(tile_type.spotter_1   , 1), scr_type_pos_y(tile_type.spotter_1   , 1,0), obj_base_tile); inst.type = tile_type.spotter_1; //spotter 2
+inst = instance_create(scr_type_pos_x(tile_type.scout_2     , 0), scr_type_pos_y(tile_type.scout_2     , 0,0), obj_base_tile); inst.type = tile_type.scout_2; //scout 1
+inst = instance_create(scr_type_pos_x(tile_type.scout_2     , 1), scr_type_pos_y(tile_type.scout_2     , 1,0), obj_base_tile); inst.type = tile_type.scout_2; //scout 2
+inst = instance_create(scr_type_pos_x(tile_type.scout_2     , 2), scr_type_pos_y(tile_type.scout_2     , 2,0), obj_base_tile); inst.type = tile_type.scout_2; //scout 3
+inst = instance_create(scr_type_pos_x(tile_type.scout_2     , 3), scr_type_pos_y(tile_type.scout_2     , 3,0), obj_base_tile); inst.type = tile_type.scout_2; //scout 4
+inst = instance_create(scr_type_pos_x(tile_type.scout_2     , 4), scr_type_pos_y(tile_type.scout_2     , 4,0), obj_base_tile); inst.type = tile_type.scout_2; //scout 5
+inst = instance_create(scr_type_pos_x(tile_type.miner_3     , 0), scr_type_pos_y(tile_type.miner_3     , 0,0), obj_base_tile); inst.type = tile_type.miner_3; //miner 1
+inst = instance_create(scr_type_pos_x(tile_type.miner_3     , 1), scr_type_pos_y(tile_type.miner_3     , 1,0), obj_base_tile); inst.type = tile_type.miner_3; //miner 2
+inst = instance_create(scr_type_pos_x(tile_type.miner_3     , 2), scr_type_pos_y(tile_type.miner_3     , 2,0), obj_base_tile); inst.type = tile_type.miner_3; //miner 3
+inst = instance_create(scr_type_pos_x(tile_type.miner_3     , 3), scr_type_pos_y(tile_type.miner_3     , 3,0), obj_base_tile); inst.type = tile_type.miner_3; //miner 4
+inst = instance_create(scr_type_pos_x(tile_type.miner_3     , 4), scr_type_pos_y(tile_type.miner_3     , 4,0), obj_base_tile); inst.type = tile_type.miner_3; //miner 5
+inst = instance_create(scr_type_pos_x(tile_type.sergeant_4  , 0), scr_type_pos_y(tile_type.sergeant_4  , 0,0), obj_base_tile); inst.type = tile_type.sergeant_4; //4 1
+inst = instance_create(scr_type_pos_x(tile_type.sergeant_4  , 1), scr_type_pos_y(tile_type.sergeant_4  , 1,0), obj_base_tile); inst.type = tile_type.sergeant_4; //4 2
+inst = instance_create(scr_type_pos_x(tile_type.lieutenant_5, 0), scr_type_pos_y(tile_type.lieutenant_5, 0,0), obj_base_tile); inst.type = tile_type.lieutenant_5; //5 1
+inst = instance_create(scr_type_pos_x(tile_type.lieutenant_5, 1), scr_type_pos_y(tile_type.lieutenant_5, 1,0), obj_base_tile); inst.type = tile_type.lieutenant_5; //5 2
+inst = instance_create(scr_type_pos_x(tile_type.captain_6   , 0), scr_type_pos_y(tile_type.captain_6   , 0,0), obj_base_tile); inst.type = tile_type.captain_6; //6 1
+inst = instance_create(scr_type_pos_x(tile_type.captain_6   , 1), scr_type_pos_y(tile_type.captain_6   , 1,0), obj_base_tile); inst.type = tile_type.captain_6; //6 2
+inst = instance_create(scr_type_pos_x(tile_type.major_7     , 0), scr_type_pos_y(tile_type.major_7     , 0,0), obj_base_tile); inst.type = tile_type.major_7; //7
+inst = instance_create(scr_type_pos_x(tile_type.colonel_8   , 0), scr_type_pos_y(tile_type.colonel_8   , 0,0), obj_base_tile); inst.type = tile_type.colonel_8; //8
+inst = instance_create(scr_type_pos_x(tile_type.general_9   , 0), scr_type_pos_y(tile_type.general_9   , 0,0), obj_base_tile); inst.type = tile_type.general_9; //9
+inst = instance_create(scr_type_pos_x(tile_type.marshal_10  , 0), scr_type_pos_y(tile_type.marshal_10  , 0,0), obj_base_tile); inst.type = tile_type.marshal_10; //10
+inst = instance_create(scr_type_pos_x(tile_type.bomb        , 0), scr_type_pos_y(tile_type.bomb        , 0,0), obj_base_tile); inst.type = tile_type.bomb; //bomb 1
+inst = instance_create(scr_type_pos_x(tile_type.bomb        , 1), scr_type_pos_y(tile_type.bomb        , 1,0), obj_base_tile); inst.type = tile_type.bomb; //bomb 2
+inst = instance_create(scr_type_pos_x(tile_type.bomb        , 2), scr_type_pos_y(tile_type.bomb        , 2,0), obj_base_tile); inst.type = tile_type.bomb; //bomb 3
+inst = instance_create(scr_type_pos_x(tile_type.bomb        , 3), scr_type_pos_y(tile_type.bomb        , 3,0), obj_base_tile); inst.type = tile_type.bomb; //bomb 4
+inst = instance_create(scr_type_pos_x(tile_type.bomb        , 4), scr_type_pos_y(tile_type.bomb        , 4,0), obj_base_tile); inst.type = tile_type.bomb; //bomb 5
+inst = instance_create(scr_type_pos_x(tile_type.bomb        , 5), scr_type_pos_y(tile_type.bomb        , 5,0), obj_base_tile); inst.type = tile_type.bomb; //bomb 6
 
 //create null blocks
 board[2,3] = instance_create(0,0, obj_base_tile); board[2,3].owner = 2; instance_deactivate_object(board[2,3]);
@@ -89,6 +88,8 @@ board[6,3] = instance_create(0,0, obj_base_tile); board[6,3].owner = 2; instance
 board[6,4] = instance_create(0,0, obj_base_tile); board[6,4].owner = 2; instance_deactivate_object(board[6,4]);
 board[7,3] = instance_create(0,0, obj_base_tile); board[7,3].owner = 2; instance_deactivate_object(board[7,3]);
 board[7,4] = instance_create(0,0, obj_base_tile); board[7,4].owner = 2; instance_deactivate_object(board[7,4]);
+
+instance_create(params.random_x, params.random_y, obj_button_randomize);
 </string>
           </argument>
         </arguments>
@@ -163,7 +164,12 @@ buffer_delete(write_buffer);
                     other.board[grid_x, grid_y] = noone;
                 } else if (ref==noone) {
                     other.placed += 1; //this is the normal case, and the only one where the number of placed items changes
-                    if (other.placed == 30) instance_create(params.submit_x, params.submit_y, obj_button_submit); //full board means we can submit
+                    if (other.placed == 30) {
+                        instance_create(params.submit_x, params.submit_y, obj_button_submit); //full board means we can submit
+                        with (obj_button_randomize) { //first time we can submit, destroy the randomize button. Don't bring it back.
+                            instance_destroy();
+                        }
+                    }
                 };
       
                 grid_x = temp_grid_x;
@@ -200,6 +206,7 @@ buffer_delete(write_buffer);
             other.sel_x = grid_x;
             other.sel_y = grid_y;
             instance_create(params.spot_x, params.spot_y, obj_button_spot);
+            scr_slide(params.board_offset_x + grid_x*params.board_grid_size, params.board_offset_y + grid_y*params.board_grid_size); //return to previous location
         } else {
             scr_slide(params.board_offset_x + grid_x*params.board_grid_size, params.board_offset_y + grid_y*params.board_grid_size); //return to previous location
         }

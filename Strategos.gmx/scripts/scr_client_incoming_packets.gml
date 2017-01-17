@@ -41,17 +41,20 @@ switch (msgId) {
         var a5 = buffer_read(buf, buffer_u8);
         var a6 = buffer_read(buf, buffer_u8);
         scr_show_move(a0, a1, a2, a3, a4, a5, a6);
-        if (spot_waiting != 0) turn_waiting = buffer_read(buf, buffer_u8); //it should always hit this case, at least for a single step
+        if (move_animation_waiting != 0) turn_waiting = buffer_read(buf, buffer_u8); //it should always hit this case, at least for a single step
         else global.turn = buffer_read(buf, buffer_u8);
         break;
     case message_type.game_over:
+        turn_waiting = 0;
+        global.turn = false;
         var winner = buffer_read(buf, buffer_u8);
         var reason = buffer_read(buf, buffer_u8); //0 = flag taken, 1 = no movable pieces, 2 = forfiet
         var type = buffer_read(buf, buffer_u8);
-        var tempx = buffer_read(buf, buffer_u8);
-        var tempy = buffer_read(buf, buffer_u8);
         while (type != 0) { //null terminated list of enemy pieces in (type, x, y) format
+            var tempx = buffer_read(buf, buffer_u8);
+            var tempy = buffer_read(buf, buffer_u8);
             board[tempx, tempy].type = type;
+            board[tempx, tempy].state = 3; //dead
             type = buffer_read(buf, buffer_u8);
         }
         break;
@@ -59,6 +62,19 @@ switch (msgId) {
         global.player = buffer_read(buf, buffer_u8);
         global.state = buffer_read(buf, buffer_u8); //1 = no partner, 2 = partner, 3 = partner ready, 4 = in play. An init is sent instead if we haven't submitted a board yet
         global.turn = buffer_read(buf, buffer_u8); //meaningless unless state=4
+        
+        //break any buttons present, erase state data
+        move_animation_waiting = 0;
+        spot_waiting = 0;
+        turn_waiting = 0;
+        placed = 30;
+        sel_x = 0;
+        sel_y = 0;
+        with (obj_button_randomize) instance_destroy();
+        with (obj_button_spot) instance_destroy();
+        with (obj_button_nospot) instance_destroy();
+        with (obj_button_submit) instance_destroy();
+        with (obj_spotting_selection) instance_destroy();
         
         for (var i = 0; i < 10; ++i) {
             for (var j = 0; j < 8; ++j) {
@@ -70,31 +86,28 @@ switch (msgId) {
         with (obj_base_tile) { //shoudln't affect deactivated deadspace blocks
             instance_destroy();
         }
-        var our_tiles = scr_type_count_array();
+        
+        
+        friendly_tiles = scr_type_count_array();
         enemy_tiles = scr_type_count_array(); //reset the instance variable
         var owner = buffer_read(buf, buffer_u8);
         while (owner != 2) { //format is owner, state, type, revealed, moved, grid_x, grid_y. Type may be 0 if not revealed, grid_x and grid_y may be 0 if dead, terminates with a 2
-            var type = buffer_read(buf, buffer_u8);
             var state = buffer_read(buf, buffer_u8);
+            var type = buffer_read(buf, buffer_u8);
             var temp_x = 0;
             var temp_y = 0;
-            if (type != 0) {
+            if (type != 0 && state==3) {
                 if (owner == 0) {
-                    our_tiles[type] -= 1;
-                    temp_x = scr_type_pos_x(type , our_tiles[type]);
-                    temp_y = scr_type_pos_y(type , our_tiles[type]);
-                } else if (state == 3){ //enemy tiles get assigned init positions at the time of death
+                    friendly_tiles[type] -= 1;
+                    temp_x = scr_type_pos_x(type , friendly_tiles[type]);
+                    temp_y = scr_type_pos_y(type , friendly_tiles[type],1);
+                } else {
                     enemy_tiles[type] -= 1;
                     temp_x = scr_type_pos_x(type , enemy_tiles[type]);
-                    temp_y = scr_type_pos_y(type , enemy_tiles[type]);
+                    temp_y = scr_type_pos_y(type , enemy_tiles[type],0);
                 }
             }
   
-            if (owner != 0) { //reverse init positions for enemy tiles
-                temp_x = room_width - temp_x;
-                temp_y = room_height - temp_y;
-            }
-            
             var inst = instance_create(temp_x, temp_y, obj_base_tile);
             inst.owner = owner;
             inst.type = type;

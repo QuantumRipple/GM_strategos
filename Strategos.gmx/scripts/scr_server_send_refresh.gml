@@ -20,9 +20,9 @@ for (var i = 0; i < 10; ++i) {
     for (var j = 0; j < 8; ++j) {
         if (board[i,j].owner < 2) {
             if (board[i,j].owner == argument[0]) {
-                buffer_write(write_buffer, buffer_u8, 0); //ownwer is target
+                buffer_write(write_buffer, buffer_u8, 0); //owner is target
             } else {
-                buffer_write(write_buffer, buffer_u8, 1); //ownwer is not target
+                buffer_write(write_buffer, buffer_u8, 1); //owner is not target
             }
             
             buffer_write(write_buffer, buffer_u8, 2); //if it is on the board, tile state is 2 (in play)

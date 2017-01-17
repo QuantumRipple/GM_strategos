@@ -3,7 +3,7 @@
   <spriteName>spr_button_spot</spriteName>
   <solid>0</solid>
   <visible>-1</visible>
-  <depth>0</depth>
+  <depth>-1</depth>
   <persistent>0</persistent>
   <parentName>&lt;undefined&gt;</parentName>
   <maskName>&lt;undefined&gt;</maskName>
@@ -86,7 +86,7 @@
           <argument>
             <kind>1</kind>
             <string>global.turn = false; //just in case; we're not allowed to touch the pieces yet
-instance_create(spot_sel_x, spot_sel_y, obj_spotting_selection);
+instance_create(params.spot_sel_x, params.spot_sel_y, obj_spotting_selection);
 with (obj_button_nospot) { //remove the other button (may not exist if we haven't moved spotter)
     instance_destroy();
 }

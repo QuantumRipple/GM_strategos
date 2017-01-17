@@ -12,10 +12,16 @@
     <sprite>sprites\spr_button_spot</sprite>
     <sprite>sprites\spr_spotting_selection</sprite>
     <sprite>sprites\spr_button_host</sprite>
+    <sprite>sprites\spr_button_randomize</sprite>
     <sprite>sprites\spr_button_join</sprite>
+    <sprite>sprites\spr_turn_indicator_on</sprite>
+    <sprite>sprites\spr_turn_indicator_off</sprite>
+    <sprite>sprites\spr_checkbox</sprite>
+    <sprite>sprites\spr_number_box</sprite>
   </sprites>
   <backgrounds name="background">
     <background>background\bgr_board</background>
+    <background>background\bgr_menu</background>
   </backgrounds>
   <paths name="paths"/>
   <scripts name="scripts">
@@ -35,9 +41,12 @@
     <script>scripts\scr_server_send_partner_setup.gml</script>
     <script>scripts\scr_server_send_game_start.gml</script>
     <script>scripts\scr_server_send_move_made.gml</script>
+    <script>scripts\scr_server_check_defeat.gml</script>
+    <script>scripts\scr_server_send_game_over.gml</script>
   </scripts>
   <fonts name="fonts">
     <font>fonts\fnt_tiles</font>
+    <font>fonts\fnt_numbers</font>
   </fonts>
   <objects name="objects">
     <object>objects\obj_base_tile</object>
@@ -52,6 +61,10 @@
     <object>objects\obj_button_join</object>
     <object>objects\obj_button_host</object>
     <object>objects\obj_control</object>
+    <object>objects\obj_button_randomize</object>
+    <object>objects\obj_turn_indicator</object>
+    <object>objects\obj_checkbox</object>
+    <object>objects\obj_number_box</object>
   </objects>
   <rooms name="rooms">
     <room>rooms\rm_menu</room>

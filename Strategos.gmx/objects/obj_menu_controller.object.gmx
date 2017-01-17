@@ -25,10 +25,10 @@
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>global.ip = "127.0.0.1";
-global.port = 5500;
-global.self_host = true;
-global.host = true;
+            <string>inst_port.disp_max = 65535;
+inst_port.disp = 5432;
+inst_ip0.disp = 127;
+inst_ip3.disp = 1;
 </string>
           </argument>
         </arguments>

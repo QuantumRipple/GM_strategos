@@ -1,8 +1,13 @@
-///scr_type_pos_y(type, instance) returns the starting y position of a tile. Instance count is 0 based
+///scr_type_pos_y(type, instance, flip) returns the starting y position of a tile. Instance count is 0 based
 
-var y_start = 700;
-var y_size = 72;
+var y_start = params.y_start;
+var y_size = params.y_size;
 
+if (argument[2]==1) { //flip
+    y_size = -y_size;
+    y_start = 2*params.board_offset_y + params.board_grid_size*8 - params.y_start - sprite_get_height(spr_blank_tile);
+}
+ 
 switch argument[0] {
     case tile_type.flag:         
         if      (argument[1]==0) return y_start;

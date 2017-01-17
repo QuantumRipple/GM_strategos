@@ -3,7 +3,7 @@
   <spriteName>spr_spotting_selection</spriteName>
   <solid>0</solid>
   <visible>-1</visible>
-  <depth>0</depth>
+  <depth>-1</depth>
   <persistent>0</persistent>
   <parentName>&lt;undefined&gt;</parentName>
   <maskName>&lt;undefined&gt;</maskName>
@@ -26,7 +26,7 @@
           <argument>
             <kind>1</kind>
             <string>with (obj_client) { //should only be 1
-    scr_submit_move(sel_x, sel_y, round((board[sel_x, sel_y].x-params.board_offset_x)/params.board_grid_size), round((board[sel_x, sel_y].y-params.board_offset_y)/params.board_grid_size),floor((mouse_x-x)/params.spot_sel_grid_size)+1);
+    scr_submit_move(sel_x, sel_y, round((board[sel_x, sel_y].x-params.board_offset_x)/params.board_grid_size), round((board[sel_x, sel_y].y-params.board_offset_y)/params.board_grid_size),floor((mouse_x-other.x)/params.spot_sel_grid_size)+1);
 }
 
 </string>

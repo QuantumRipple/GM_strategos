@@ -3,7 +3,7 @@
   <spriteName>spr_button_join</spriteName>
   <solid>0</solid>
   <visible>-1</visible>
-  <depth>0</depth>
+  <depth>-1</depth>
   <persistent>0</persistent>
   <parentName>&lt;undefined&gt;</parentName>
   <maskName>&lt;undefined&gt;</maskName>
@@ -26,6 +26,12 @@
           <argument>
             <kind>1</kind>
             <string>global.host = false;
+global.ip = string(inst_ip0.disp)+"."+string(inst_ip1.disp)+"."+string(inst_ip2.disp)+"."+string(inst_ip3.disp);
+global.port = inst_port.disp;
+global.track_enemy_revealed = inst_track_enemy_revealed.state;
+global.track_enemy_moved = inst_track_enemy_moved.state;
+global.track_my_moved = inst_track_my_moved.state;
+global.track_my_revealed = inst_track_my_revealed.state;
 </string>
           </argument>
         </arguments>

@@ -25,13 +25,15 @@
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>parent = obj_client;
+            <string>parent = instance_find(obj_client,0);
 type = 0; //0 = blank, 1-13 = F-B
 state = 0; //0 = waiting to be placed, 1 = unlocked but placed, 2 = in play, 3 = dead
 owner = 0; //0 = this player, 1 = opponent, 2 null
 grid_x = -1;
 grid_y = -1;
 
+slide_decr = false;
+slide_last_animation_waiting = 0;
 slide_x = -1;
 slide_y = -1;
 
@@ -40,6 +42,7 @@ just_revealed = false;
 moved = false;
 grabbed = false; //grabbed freely during setup
 sliding = false; //moving without user interaction
+death_waiting = false;
 active = false; //grabbed in a constrained fashion during play
 selected = false; //highlighted spotter waiting for user input
 
@@ -78,18 +81,21 @@ grab_offset_y = 0;
     y = mouse_y+grab_offset_y;
 } else if (active == true) {
     var dir = point_direction(params.board_offset_x + grid_x*params.board_grid_size, params.board_offset_y + grid_y*params.board_grid_size,mouse_x+grab_offset_x, mouse_y+grab_offset_y); 
-    if        ((dir &gt;=  45 || (dir &gt;=   0 &amp;&amp; right_range == 0)) &amp;&amp; (dir &lt; 135 || (dir &lt; 180 &amp;&amp;  left_range == 0))) { //treat as up
+    if        (up_range &gt; 0 &amp;&amp; (dir &gt;=  45 || (dir &gt;=   0 &amp;&amp; right_range == 0)) &amp;&amp; (dir &lt; 135 || (dir &lt; 180 &amp;&amp;  left_range == 0))) { //treat as up
         x=params.board_offset_x + grid_x*params.board_grid_size;
         y=clamp(mouse_y+grab_offset_y, params.board_offset_y + (grid_y-up_range)*params.board_grid_size, params.board_offset_y + grid_y*params.board_grid_size);
-    } else if ((dir &gt;= 135 || (dir &gt;=  90 &amp;&amp;    up_range == 0)) &amp;&amp; (dir &lt; 225 || (dir &lt; 270 &amp;&amp;  down_range == 0))) { //treat as left
+    } else if (left_range &gt; 0 &amp;&amp; (dir &gt;= 135 || (dir &gt;=  90 &amp;&amp;    up_range == 0)) &amp;&amp; (dir &lt; 225 || (dir &lt; 270 &amp;&amp;  down_range == 0))) { //treat as left
         y=params.board_offset_y + grid_y*params.board_grid_size;
         x=clamp(mouse_x+grab_offset_x, params.board_offset_x + (grid_x-left_range)*params.board_grid_size, params.board_offset_x + grid_x*params.board_grid_size);
-    } else if ((dir &gt;= 225 || (dir &gt;= 180 &amp;&amp;  left_range == 0)) &amp;&amp; (dir &lt; 315 || (dir &lt; 360 &amp;&amp; right_range == 0))) { //treat as down
+    } else if (down_range &gt; 0 &amp;&amp; (dir &gt;= 225 || (dir &gt;= 180 &amp;&amp;  left_range == 0)) &amp;&amp; (dir &lt; 315 || (dir &lt; 360 &amp;&amp; right_range == 0))) { //treat as down
         x=params.board_offset_x + grid_x*params.board_grid_size;
         y=clamp(mouse_y+grab_offset_y, params.board_offset_y + grid_y*params.board_grid_size, params.board_offset_y + (grid_y+down_range)*params.board_grid_size);
-    } else if ((dir &gt;= 315 || (dir &gt;= 270 &amp;&amp;  down_range == 0)) || (dir &lt;  45 || (dir &lt;  90 &amp;&amp;    up_range == 0))) { //treat as right
+    } else if (right_range &gt; 0 &amp;&amp; (dir &gt;= 315 || (dir &gt;= 270 &amp;&amp;  down_range == 0)) || (dir &lt;  45 || (dir &lt;  90 &amp;&amp;    up_range == 0))) { //treat as right
         y=params.board_offset_y + grid_y*params.board_grid_size;
         x=clamp(mouse_x+grab_offset_x, params.board_offset_x + grid_x*params.board_grid_size, params.board_offset_x + (grid_x+right_range)*params.board_grid_size);
+    } else {
+        x=params.board_offset_x + grid_x*params.board_grid_size;
+        y=params.board_offset_y + grid_y*params.board_grid_size;
     }
 } else if (sliding == true) {
     if (point_distance(x,y,slide_x, slide_y) &lt; speed) {
@@ -98,120 +104,19 @@ grab_offset_y = 0;
         speed = 0;
         depth = 0;
         sliding = false;
-        if (parent.move_animation_waiting != 0) {
-            if (parent.move_animation_waiting == 1) {
-                var xdef = round((x-params.board_offset_x)/params.board_grid_size);
-                var ydef = round((y-params.board_offset_y)/params.board_grid_size);
-                if (parent.spot_waiting != 0) { //a spot will happen
-                    if (owner== 0) var defender = parent.board[xdef, ydef-1]; //this player
-                    else var defender = parent.board[xdef, ydef+1]; //opponent
-                    if (xdef != grid_x) || (ydef != grid_y) { //we moved the spotter as well
-                        parent.board[grid_x, grid_y] = noone;
-                        parent.board[xdef, ydef] = self; //no need to check because we can't spot if we weren't moving into a null spot
-                    }
-                    if (parent.spot_waiting == defender.type) { //killed via spotting
-                        parent.board[xdef, ydef+1] = noone;
-                        defender.state = 3;
-                        
-                        if (defender.owner==0) { //we were defending, send it to the other side's board
-                            parent.friendly_tiles[defender.type] -= 1;
-                            defender.xstart = room_width - scr_type_pos_x(defender.type,parent.friendly_tiles[defender.type]);
-                            defender.ystart = room_height - scr_type_pos_y(defender.type,parent.friendly_tiles[defender.type]);
-                        } else { //enemy defender
-                            parent.enemy_tiles[defender.type] -= 1;
-                            defender.xstart = scr_type_pos_x(defender.type,parent.enemy_tiles[defender.type]);
-                            defender.ystart = scr_type_pos_y(defender.type,parent.enemy_tiles[defender.type]);
-                        }
-                        
-                        with (defender) { //move to start position
-                            scr_slide(xstart, ystart);
-                        }
-                        parent.move_animation_waiting = 3;
-                    }
-                    
-                } else { //move or combat
-                    var defender = parent.board[xdef, ydef];
-                    parent.board[grid_x, grid_y] = noone; //free our old spot
-                    if (defender != noone) { //combat
-                        switch(scr_battle_eval(type, defender.type)) {
-                            case 0: //attacker won
-                                parent.board[xdef, ydef] = self;
-                                grid_x = xdef;
-                                grid_y = ydef;
-                                defender.state = 3;
-                                if (defender.owner==0) { //we were defending, send it to the other side's board
-                                    parent.friendly_tiles[defender.type] -= 1;
-                                    defender.xstart = room_width - scr_type_pos_x(defender.type,parent.friendly_tiles[defender.type]);
-                                    defender.ystart = room_height - scr_type_pos_y(defender.type,parent.friendly_tiles[defender.type]);
-                                } else { //enemy defender
-                                    parent.enemy_tiles[defender.type] -= 1;
-                                    defender.xstart = scr_type_pos_x(defender.type,parent.enemy_tiles[defender.type]);
-                                    defender.ystart = scr_type_pos_y(defender.type,parent.enemy_tiles[defender.type]);
-                                }
-                                with (defender) { //move to start position
-                                    scr_slide(xstart, ystart);
-                                }
-                                parent.move_animation_waiting = 3;
-                                break;
-                            case 1: //defender won
-                                state = 3;
-                                
-                                if (owner==0) { //we were attacking, send it to the other side's board
-                                    parent.friendly_tiles[type] -= 1;
-                                    xstart = room_width - scr_type_pos_x(type,parent.friendly_tiles[type]);
-                                    ystart = room_height - scr_type_pos_y(type,parent.friendly_tiles[type]);
-                                } else { //enemy attacker
-                                    parent.enemy_tiles[type] -= 1;
-                                    xstart = scr_type_pos_x(type,parent.enemy_tiles[type]);
-                                    ystart = scr_type_pos_y(type,parent.enemy_tiles[type]);
-                                }
-                                
-                                scr_slide(xstart, ystart);
-                                parent.move_animation_waiting = 3;
-                                break;
-                            case 2: //tie
-                                parent.board[xdef, ydef] = noone;
-                                if (defender.owner==0) { //we were defending, send it to the other side's board
-                                    parent.friendly_tiles[defender.type] -= 1;
-                                    defender.xstart = room_width - scr_type_pos_x(defender.type,parent.friendly_tiles[defender.type]);
-                                    defender.ystart = room_height - scr_type_pos_y(defender.type,parent.friendly_tiles[defender.type]);
-                                } else { //enemy defender
-                                    parent.enemy_tiles[defender.type] -= 1;
-                                    defender.xstart = scr_type_pos_x(defender.type,parent.enemy_tiles[defender.type]);
-                                    defender.ystart = scr_type_pos_y(defender.type,parent.enemy_tiles[defender.type]);
-                                }
-                                with (defender) { //move to start position
-                                    scr_slide(xstart, ystart);
-                                }
-                                
-                                if (owner==0) { //we were attacking, send it to the other side's board
-                                    parent.friendly_tiles[type] -= 1;
-                                    xstart = room_width - scr_type_pos_x(type,parent.friendly_tiles[type]);
-                                    ystart = room_height - scr_type_pos_y(type,parent.friendly_tiles[type]);
-                                } else { //enemy attacker
-                                    parent.enemy_tiles[type] -= 1;
-                                    xstart = scr_type_pos_x(type,parent.enemy_tiles[type]);
-                                    ystart = scr_type_pos_y(type,parent.enemy_tiles[type]);
-                                }
-                                state = 3;
-                                scr_slide(xstart, ystart);
-                                parent.move_animation_waiting = 4;
-                                break;
-                        }
-                    } else { //plain movement
-                        parent.board[xdef, ydef] = self;
-                        grid_x = xdef;
-                        grid_y = ydef;
-                    }
-                }
-            } else if (parent.move_animation_waiting == 4) {
-                parent.move_animation_waiting = 3;
-            } else if (parent.move_animation_waiting == 3) {
-                parent.move_animation_waiting = 0;
-                if (parent.turn_waiting) global.turn = true; //animation is done, if our turn
+        if (slide_decr) {
+            slide_decr=false;
+            parent.move_animation_waiting -=1;
+            if (parent.move_animation_waiting==0 &amp;&amp; parent.turn_waiting) {
+                global.turn=true;
+                parent.turn_waiting=false;
             }
         }
     }
+} else if (death_waiting &amp;&amp; parent.move_animation_waiting &lt; slide_last_animation_waiting) {
+    death_waiting = false;
+    slide_decr = true;
+    scr_slide(xstart, ystart, -10, 10, 2, 90);
 }
 </string>
           </argument>
@@ -296,7 +201,7 @@ grab_offset_y = 0;
     depth = -10; //draw on top
     grab_offset_x = x - mouse_x; //move from where we grabbed it instead of the origin of the tile
     grab_offset_y = y - mouse_y;
-} else if (global.turn &amp;&amp; state == 2 &amp;&amp; sliding==false) { //verify we aren't sliding to ensure we can't activate two tiles
+} else if (global.turn &amp;&amp; state == 2 &amp;&amp; sliding==false &amp;&amp; owner==0) { //verify we aren't sliding to ensure we can't activate two tiles
     var valid_action = false;
     //spotter can act without moving if an enemy is in front of him
     if (type==tile_type.spotter_1 &amp;&amp; (grid_y &gt;= 1) &amp;&amp; parent.board[grid_x, grid_y-1]!=noone &amp;&amp; parent.board[grid_x, grid_y-1].owner==1) {
@@ -312,7 +217,7 @@ grab_offset_y = 0;
         if (grid_y &gt;= 1 &amp;&amp; (parent.board[grid_x, grid_y-1]==noone || parent.board[grid_x, grid_y-1].owner==1)) { //can move up
             up_range = 1;
             valid_action=true;
-            if (type == tile_type.scout_2) {
+            if (type == tile_type.scout_2 &amp;&amp; parent.board[grid_x, grid_y-1]==noone) {
                 for (var i = 2; i &lt; 8; ++i) {
                     if (grid_y-i &lt; 0) break;
                     if (parent.board[grid_x, grid_y-i]==noone) {
@@ -329,7 +234,7 @@ grab_offset_y = 0;
         if (grid_y &lt;= 6 &amp;&amp; (parent.board[grid_x, grid_y+1]==noone || parent.board[grid_x, grid_y+1].owner==1)) { //can move down
             down_range = 1;
             valid_action=true;
-            if (type == tile_type.scout_2) {
+            if (type == tile_type.scout_2 &amp;&amp; parent.board[grid_x, grid_y+1]==noone) {
                 for (var i = 2; i &lt; 8; ++i) {
                     if (grid_y+i &gt; 7) break;
                     if (parent.board[grid_x, grid_y+i]==noone) {
@@ -346,7 +251,7 @@ grab_offset_y = 0;
         if (grid_x &gt;= 1 &amp;&amp; (parent.board[grid_x-1, grid_y]==noone || parent.board[grid_x-1, grid_y].owner==1)) { //can move left
             left_range = 1;
             valid_action=true;
-            if (type == tile_type.scout_2) {
+            if (type == tile_type.scout_2 &amp;&amp; parent.board[grid_x-1, grid_y]==noone) {
                 for (var i = 2; i &lt; 10; ++i) {
                     if (grid_x-i &lt; 0) break;
                     if (parent.board[grid_x-i, grid_y]==noone) {
@@ -361,9 +266,9 @@ grab_offset_y = 0;
             left_range = 0;
         }
         if (grid_x &lt;= 8 &amp;&amp; (parent.board[grid_x+1, grid_y]==noone || parent.board[grid_x+1, grid_y].owner==1)) { //can move right
-            right_range = 0;
+            right_range = 1;
             valid_action=true;
-            if (type == tile_type.scout_2) {
+            if (type == tile_type.scout_2 &amp;&amp; parent.board[grid_x+1, grid_y]==noone) {
                 for (var i = 2; i &lt; 10; ++i) {
                     if (grid_x+i &gt; 9) break;
                     if (parent.board[grid_x+i, grid_y]==noone) {
@@ -422,10 +327,10 @@ grab_offset_y = 0;
             <string>//TODO: options for images instead of text
 var spr_index = 0;
 if (owner==0) {
-    if (global.track_my_moved &amp;&amp; moved) spr_index += 2;
+    if (global.track_my_moved &amp;&amp; moved &amp;&amp; state == 2) spr_index += 2;
     if (global.player==0) spr_index += 1; else spr_index += 2;    
 } else if (owner==1) {
-    if (global.track_enemy_moved &amp;&amp; moved) spr_index += 2;
+    if (global.track_enemy_moved &amp;&amp; moved &amp;&amp; state == 2) spr_index += 2;
     if (global.player==1) spr_index += 1; else spr_index += 2;
 }
 draw_sprite(spr_blank_tile, spr_index, x, y); 
@@ -474,7 +379,7 @@ switch (type) {
 }
 if (display_character != '' &amp;&amp; (owner==0 || state == 3 || just_revealed || (revealed &amp;&amp; global.track_enemy_revealed))){
     draw_set_font(fnt_tiles);
-    if (owner == 0 &amp;&amp; global.track_my_revealed &amp;&amp; revealed) {
+    if (owner == 0 &amp;&amp; global.track_my_revealed &amp;&amp; revealed &amp;&amp; state == 2) {
         draw_set_color(c_yellow);
     } else {
         draw_set_color(c_white);

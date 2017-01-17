@@ -48,6 +48,15 @@ for (var i = 9; i &gt;= 0; --i) {
     }
 }
 
+board[2,3].type = tile_type.block;
+board[2,4].type = tile_type.block;
+board[3,3].type = tile_type.block;
+board[3,4].type = tile_type.block;
+board[6,3].type = tile_type.block;
+board[6,4].type = tile_type.block;
+board[7,3].type = tile_type.block;
+board[7,4].type = tile_type.block;
+
 if (global.self_host = true) {
     global.ip = "127.0.0.1";
     global.player = 0;
@@ -129,11 +138,11 @@ switch(v_event_type){
         break;
     case network_type_disconnect: //TODO: send disconnect messages
         var socket = ds_map_find_value(async_load, "socket");
-        if (socket == client_a) {
-            client_a = noone;
+        if (socket == client[0]) {
+            client[0] = noone;
             --client_count;
-        } else if (socket == client_b) {
-            client_b = noone;
+        } else if (socket == client[1]) {
+            client[1] = noone;
             --client_count;
         }
         break;

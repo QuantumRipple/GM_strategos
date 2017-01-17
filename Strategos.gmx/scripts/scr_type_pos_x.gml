@@ -1,7 +1,7 @@
 ///scr_type_pos_x(type, instance) returns the starting x position of a tile. Instance count is 0 based
 
-var x_start = 13;
-var x_size = 72;
+var x_start = params.x_start;
+var x_size = params.x_size;
 
 
 

@@ -1,26 +1,31 @@
+global.ip = "127.0.0.1";
+global.port = 5432;
+global.self_host = true;
+global.host = true;
+
 global.player = 1; //0=red, 1= blue
 global.state = 0;
 global.turn = false;
-global.track_enemy_revealed = false;
-global.track_enemy_moved = false;
-global.track_my_moved = false;
-global.track_my_revealed = false;
+global.track_enemy_revealed = true;
+global.track_enemy_moved = true;
+global.track_my_moved = true;
+global.track_my_revealed = true;
 
 enum message_type {
     submit_board,
     submit_move,
     request_refresh,
-    error_illegal_board,
-    error_unexpected_message,
-    error_illegal_move,
+    error_illegal_board, //TODO
+    error_unexpected_message, //TODO
+    error_illegal_move, //TODO
     refresh_data,
-    message,
+    message, //TODO
     partner_setup,
     partner_connected,
-    partner_disconnected,
+    partner_disconnected, //TODO
     move_made,
     init,
-    game_over,
+    game_over, //TODO
     game_start
 }
 
@@ -49,19 +54,21 @@ enum params {
     x_start = 13, //off-board setup positions
     x_size = 72,
     y_start = 700,
-    y_size = 72,
+    y_size = 70,
     default_min_slide = 5, //slide function defaults
     default_max_slide = 50,
     default_slide_time = 5,
     default_slide_depth = -10,
     buffer_size = 1024, //network buffer sizes
-    submit_x = 400, //submit button location
-    submit_y = 300,
-    spot_x = 400,
-    spot_y = 300,
-    nospot_x = 550,
-    nospot_y = 300,
-    spot_sel_x = 100,
-    spot_sel_y = 100,
+    submit_x = 437, //submit button location
+    submit_y = 80,
+    random_x = 437,
+    random_y = 15,
+    spot_x = 337,
+    spot_y = 15,
+    nospot_x = 537,
+    nospot_y = 15,
+    spot_sel_x = 187,
+    spot_sel_y = 15,
     spot_sel_grid_size = 50
 }
